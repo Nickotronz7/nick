@@ -1,19 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+
 
 struct Node{
     int data;
     struct Node* prev;
     struct Node* next;
 };
-
 void printList(struct Node* head){
     while (head != NULL){
         printf("%d\n", head->data);
         head = head->next;
     }
 }
-
 void push(struct Node** head, int new_data){
     struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
     new_node->data = new_data;
@@ -25,11 +25,36 @@ void push(struct Node** head, int new_data){
 
     (*head) = new_node;
 }
-
 void swap(struct Node* a, struct Node* b){
     int tmp = a->data;
     a->data = b->data;
     b->data = tmp;
+}
+struct Node* rndList(int largo){
+    struct Node* list = NULL;
+    int numero;
+    time_t hora = time(NULL);
+    srand((unsigned int) hora);
+    for (int i = 0; i < largo; ++i) {
+        numero = rand()%10000;
+        push(&list, numero);
+    }
+    return list;
+}
+struct Node* invertList(int largo){
+    struct Node* list = NULL;
+    for (int i = 0; i < largo; ++i) {
+        push(&list, i);
+    }
+    return list;
+}
+struct Node* sortList(int largo){
+    struct Node* list = NULL;
+    while (largo != 0){
+        push(&list, largo);
+        largo--;
+    }
+    return list;
 }
 
 /** Insertion Sort */
@@ -59,7 +84,6 @@ void insertOrden(struct Node** head, struct Node* newNode){
         newNode->prev = actual;
     }
 }
-
 void insertionSort(struct Node** head){
     struct Node* sorted = NULL;
     struct Node* actual = *head;
@@ -74,25 +98,25 @@ void insertionSort(struct Node** head){
 /***/
 
 /** Bubble Sort */
-void bubbleSortAux(struct Node* head){
-    while(head->next!=NULL){
-        if(head->data > head->next->data){
-            swap(head,head->next);
-        }
-        head=head->next;
-        bubbleSortAux(head);
-    }
-}
-void bubbleAux(struct Node* head, int n){
-    if (n == 0){
-        bubbleSortAux(head);
-    } else {
-        bubbleSortAux(head);
-        bubbleAux(head, 0);
-    }
-}
 void bubbleSort(struct Node* head){
-    bubbleAux(head, 3);
+    int swapped, i;
+    struct Node* ptr1;
+    struct Node* lptr = NULL;
+    if (ptr1 == NULL)
+        return;
+
+    do{
+        swapped = 0;
+        ptr1 = head;
+        while (ptr1->next != lptr){
+            if (ptr1->data > ptr1->next->data){
+                swap(ptr1, ptr1->next);
+                swapped = 1;
+            }
+            ptr1 = ptr1->next;
+        }
+        lptr = ptr1;
+    }while (swapped);
 }
 /***/
 
@@ -108,7 +132,6 @@ struct Node* split(struct Node* head){
     slow->next = NULL;
     return tmp;
 }
-
 struct Node* merge(struct Node* prim, struct Node* sec){
     if(!prim)
         return sec;
@@ -128,7 +151,6 @@ struct Node* merge(struct Node* prim, struct Node* sec){
         return sec;
     }
 }
-
 struct Node* mergeSort(struct Node* head){
     if (!head || !head->next)
         return head;
@@ -147,7 +169,6 @@ struct Node* lastNode(struct Node* head){
         head = head->next;
     return head;
 }
-
 struct Node* partition(struct Node* l, struct Node* h){
     int x = h->data;
     struct Node* i = l->prev;
@@ -161,7 +182,6 @@ struct Node* partition(struct Node* l, struct Node* h){
     swap(i, h);
     return i;
 }
-
 void _quickSort(struct Node* l, struct Node* h){
     if (h != NULL && l != h && l != h->next){
         struct Node* p = partition(l, h);
@@ -169,13 +189,11 @@ void _quickSort(struct Node* l, struct Node* h){
         _quickSort(p->next, h);
     }
 }
-
 void quickSort(struct Node* head){
     struct Node* h = lastNode(head);
     _quickSort(head, h);
 }
 /***/
-
 
 /*** Selection Sort */
 void selectionSort(struct Node* head){
@@ -194,19 +212,648 @@ void selectionSort(struct Node* head){
     //head = &h;
 }
 /***/
-int main(){
-    struct Node* Lista1 = NULL;
 
-    push(&Lista1, 3);
-    push(&Lista1, 63);
-    push(&Lista1, 64);
-    push(&Lista1, 56);
-    push(&Lista1, 5);
-    push(&Lista1, 9);
-    push(&Lista1, 52);
-    push(&Lista1, 577);
+void testBubble(){
+    //mejor caso
+    struct Node** bestCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int ptrmover = 0;
+    for (int i = 10; i <= 100000; i*=10) {
+        *(bestCase + ptrmover) = sortList(i);
+        ptrmover++;
+    }
+    int count = 10;
+    long time;
+    clock_t start, end;
+    long segBest[5];
+    int elemtBest[5];
+    for (int j = 0; j < 5; ++j) {
+        start = clock();
+        bubbleSort(*(bestCase+j));
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segBest[j] = time;
+        elemtBest[j] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* bestfile;
+    bestfile = fopen("BubbleSort_Peor.csv", "w");
+    if (bestfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if(i+1 == 5){
+                fprintf(bestfile, "%d",elemtBest[i]);
+            } else {
+                fprintf(bestfile, "%d,",elemtBest[i]);
+            }
+        }
+        fprintf(bestfile,"\n");
+        for (int j = 0; j < 5; ++j) {
+            if(j+1 == 5){
+                fprintf(bestfile, "%ld",segBest[j]);
+            } else {
+                fprintf(bestfile, "%ld,",segBest[j]);
+            }
+        }
+    }
+    fclose(bestfile);
+    free(bestCase);
 
-    selectionSort(Lista1);
+    //Caso promedio
+    struct Node** promCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int promIndex = 0;
+    for (int m = 10; m <= 100000; m*=10) {
+        *(promCase + promIndex) = rndList(m);
+        promIndex++;
+    }
+    long segProm[5];
+    int elemtProm[5];
+    for (int k = 0; k < 5; ++k) {
+        start = clock();
+        bubbleSort(*(promCase+k));
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segProm[k] = time;
+        elemtProm[k] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* promfile;
+    promfile = fopen("BubbleSort_Promedio.csv", "w");
+    if (promfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5){
+                fprintf(promfile, "%d", elemtProm[i]);
+            } else {
+                fprintf(promfile, "%d,", elemtProm[i]);
+            }
+        }
+        fprintf(promfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5){
+                fprintf(promfile, "%ld", segProm[j]);
+            } else {
+                fprintf(promfile, "%ld,", segProm[j]);
+            }
+        }
+    }
+    fclose(promfile);
+    free(promCase);
 
-    printList(Lista1);
+    //Peor Caso
+    struct Node** worstCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int worstIndex = 0;
+    for (int l = 10; l <= 100000; l*=10) {
+        *(worstCase + worstIndex) = invertList(l);
+        worstIndex++;
+    }
+    long segWorst[5];
+    int elemtWorst[5];
+    for (int n = 0; n < 5; ++n) {
+        start = clock();
+        bubbleSort(*(worstCase+n));
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segWorst[n] = time;
+        elemtWorst[n] = count;
+        count*=10;
+    }
+    FILE* worstfile;
+    worstfile = fopen("BubbleSort_Mejor.csv", "w");
+    if (worstfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5) {
+                fprintf(worstfile, "%d", elemtWorst[i]);
+            } else {
+                fprintf(worstfile, "%d,", elemtWorst[i]);
+            }
+        }
+        fprintf(worstfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5) {
+                fprintf(worstfile, "%ld", segWorst[j]);
+            } else {
+                fprintf(worstfile, "%ld,", segWorst[j]);
+            }
+        }
+    }
+    fclose(worstfile);
+    free(worstCase);
+}
+
+void testInsertion(){
+    //mejor caso
+    struct Node** bestCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int ptrmover = 0;
+    for (int i = 10; i <= 100000; i*=10) {
+        *(bestCase + ptrmover) = sortList(i);
+        ptrmover++;
+    }
+    int count = 10;
+    long time;
+    clock_t start, end;
+    long segBest[5];
+    int elemtBest[5];
+    for (int j = 0; j < 5; ++j) {
+        start = clock();
+        insertionSort(&(bestCase[j]));
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segBest[j] = time;
+        elemtBest[j] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* bestfile;
+    bestfile = fopen("InsertionSort_Peor.csv", "w");
+    if (bestfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if(i+1 == 5){
+                fprintf(bestfile, "%d",elemtBest[i]);
+            } else {
+                fprintf(bestfile, "%d,",elemtBest[i]);
+            }
+        }
+        fprintf(bestfile,"\n");
+        for (int j = 0; j < 5; ++j) {
+            if(j+1 == 5){
+                fprintf(bestfile, "%ld",segBest[j]);
+            } else {
+                fprintf(bestfile, "%ld,",segBest[j]);
+            }
+        }
+    }
+    fclose(bestfile);
+    free(bestCase);
+
+    //Caso promedio
+    struct Node** promCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int promIndex = 0;
+    for (int m = 10; m <= 100000; m*=10) {
+        *(promCase + promIndex) = rndList(m);
+        promIndex++;
+    }
+    long segProm[5];
+    int elemtProm[5];
+    for (int k = 0; k < 5; ++k) {
+        start = clock();
+        insertionSort(&(promCase[k]));
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segProm[k] = time;
+        elemtProm[k] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* promfile;
+    promfile = fopen("InsertionSort_Promedio.csv", "w");
+    if (promfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5){
+                fprintf(promfile, "%d", elemtProm[i]);
+            } else {
+                fprintf(promfile, "%d,", elemtProm[i]);
+            }
+        }
+        fprintf(promfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5){
+                fprintf(promfile, "%ld", segProm[j]);
+            } else {
+                fprintf(promfile, "%ld,", segProm[j]);
+            }
+        }
+    }
+    fclose(promfile);
+    free(promCase);
+
+    //Peor Caso
+    struct Node** worstCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int worstIndex = 0;
+    for (int l = 10; l <= 100000; l*=10) {
+        *(worstCase + worstIndex) = invertList(l);
+        worstIndex++;
+    }
+    long segWorst[5];
+    int elemtWorst[5];
+    for (int n = 0; n < 5; ++n) {
+        start = clock();
+        insertionSort(&(worstCase[n]));
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segWorst[n] = time;
+        elemtWorst[n] = count;
+        count*=10;
+    }
+    FILE* worstfile;
+    worstfile = fopen("InsertionSort_Mejor.csv", "w");
+    if (worstfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5) {
+                fprintf(worstfile, "%d", elemtWorst[i]);
+            } else {
+                fprintf(worstfile, "%d,", elemtWorst[i]);
+            }
+        }
+        fprintf(worstfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5) {
+                fprintf(worstfile, "%ld", segWorst[j]);
+            } else {
+                fprintf(worstfile, "%ld,", segWorst[j]);
+            }
+        }
+    }
+    fclose(worstfile);
+    free(worstCase);
+}
+
+void testMerge(){
+    //mejor caso
+    struct Node** bestCase = (struct Node**)malloc(5*sizeof(struct Node));
+    struct Node* listap;
+    int ptrmover = 0;
+    for (int i = 10; i <= 100000; i*=10) {
+        *(bestCase + ptrmover) = sortList(i);
+        ptrmover++;
+    }
+    int count = 10;
+    long time;
+    clock_t start, end;
+    long segBest[5];
+    int elemtBest[5];
+    for (int j = 0; j < 5; ++j) {
+        start = clock();
+        listap = mergeSort(bestCase[j]);
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segBest[j] = time;
+        elemtBest[j] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* bestfile;
+    bestfile = fopen("MergeSort_Peor.csv", "w");
+    if (bestfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if(i+1 == 5){
+                fprintf(bestfile, "%d",elemtBest[i]);
+            } else {
+                fprintf(bestfile, "%d,",elemtBest[i]);
+            }
+        }
+        fprintf(bestfile,"\n");
+        for (int j = 0; j < 5; ++j) {
+            if(j+1 == 5){
+                fprintf(bestfile, "%ld",segBest[j]);
+            } else {
+                fprintf(bestfile, "%ld,",segBest[j]);
+            }
+        }
+    }
+    fclose(bestfile);
+    free(bestCase);
+
+    //Caso promedio
+    struct Node** promCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int promIndex = 0;
+    for (int m = 10; m <= 100000; m*=10) {
+        *(promCase + promIndex) = rndList(m);
+        promIndex++;
+    }
+    long segProm[5];
+    int elemtProm[5];
+    for (int k = 0; k < 5; ++k) {
+        start = clock();
+        listap = mergeSort(promCase[k]);
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segProm[k] = time;
+        elemtProm[k] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* promfile;
+    promfile = fopen("MergeSort_Promedio.csv", "w");
+    if (promfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5){
+                fprintf(promfile, "%d", elemtProm[i]);
+            } else {
+                fprintf(promfile, "%d,", elemtProm[i]);
+            }
+        }
+        fprintf(promfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5){
+                fprintf(promfile, "%ld", segProm[j]);
+            } else {
+                fprintf(promfile, "%ld,", segProm[j]);
+            }
+        }
+    }
+    fclose(promfile);
+    free(promCase);
+
+    //Peor Caso
+    struct Node** worstCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int worstIndex = 0;
+    for (int l = 10; l <= 100000; l*=10) {
+        *(worstCase + worstIndex) = invertList(l);
+        worstIndex++;
+    }
+    long segWorst[5];
+    int elemtWorst[5];
+    for (int n = 0; n < 5; ++n) {
+        start = clock();
+        listap = mergeSort(worstCase[n]);
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segWorst[n] = time;
+        elemtWorst[n] = count;
+        count*=10;
+    }
+    FILE* worstfile;
+    worstfile = fopen("InsertionSort_Mejor.csv", "w");
+    if (worstfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5) {
+                fprintf(worstfile, "%d", elemtWorst[i]);
+            } else {
+                fprintf(worstfile, "%d,", elemtWorst[i]);
+            }
+        }
+        fprintf(worstfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5) {
+                fprintf(worstfile, "%ld", segWorst[j]);
+            } else {
+                fprintf(worstfile, "%ld,", segWorst[j]);
+            }
+        }
+    }
+    fclose(worstfile);
+    free(worstCase);
+}
+
+void testQuick(){
+    //mejor caso
+    struct Node** bestCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int ptrmover = 0;
+    for (int i = 10; i <= 100000; i*=10) {
+        *(bestCase + ptrmover) = sortList(i);
+        ptrmover++;
+    }
+    int count = 10;
+    long time;
+    clock_t start, end;
+    long segBest[5];
+    int elemtBest[5];
+    for (int j = 0; j < 5; ++j) {
+        start = clock();
+        quickSort(bestCase[j]);
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segBest[j] = time;
+        elemtBest[j] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* bestfile;
+    bestfile = fopen("QuickSort_Peor.csv", "w");
+    if (bestfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if(i+1 == 5){
+                fprintf(bestfile, "%d",elemtBest[i]);
+            } else {
+                fprintf(bestfile, "%d,",elemtBest[i]);
+            }
+        }
+        fprintf(bestfile,"\n");
+        for (int j = 0; j < 5; ++j) {
+            if(j+1 == 5){
+                fprintf(bestfile, "%ld",segBest[j]);
+            } else {
+                fprintf(bestfile, "%ld,",segBest[j]);
+            }
+        }
+    }
+    fclose(bestfile);
+    free(bestCase);
+
+    //Caso promedio
+    struct Node** promCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int promIndex = 0;
+    for (int m = 10; m <= 100000; m*=10) {
+        *(promCase + promIndex) = rndList(m);
+        promIndex++;
+    }
+    long segProm[5];
+    int elemtProm[5];
+    for (int k = 0; k < 5; ++k) {
+        start = clock();
+        quickSort(promCase[k]);
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segProm[k] = time;
+        elemtProm[k] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* promfile;
+    promfile = fopen("QuickSort_Promedio.csv", "w");
+    if (promfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5){
+                fprintf(promfile, "%d", elemtProm[i]);
+            } else {
+                fprintf(promfile, "%d,", elemtProm[i]);
+            }
+        }
+        fprintf(promfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5){
+                fprintf(promfile, "%ld", segProm[j]);
+            } else {
+                fprintf(promfile, "%ld,", segProm[j]);
+            }
+        }
+    }
+    fclose(promfile);
+    free(promCase);
+
+    //Peor Caso
+    struct Node** worstCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int worstIndex = 0;
+    for (int l = 10; l <= 100000; l*=10) {
+        *(worstCase + worstIndex) = invertList(l);
+        worstIndex++;
+    }
+    long segWorst[5];
+    int elemtWorst[5];
+    for (int n = 0; n < 5; ++n) {
+        start = clock();
+        quickSort(worstCase[n]);
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segWorst[n] = time;
+        elemtWorst[n] = count;
+        count*=10;
+    }
+    FILE* worstfile;
+    worstfile = fopen("QuickSort_Mejor.csv", "w");
+    if (worstfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5) {
+                fprintf(worstfile, "%d", elemtWorst[i]);
+            } else {
+                fprintf(worstfile, "%d,", elemtWorst[i]);
+            }
+        }
+        fprintf(worstfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5) {
+                fprintf(worstfile, "%ld", segWorst[j]);
+            } else {
+                fprintf(worstfile, "%ld,", segWorst[j]);
+            }
+        }
+    }
+    fclose(worstfile);
+    free(worstCase);
+}
+
+void testSelection(){
+    //mejor caso
+    struct Node** bestCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int ptrmover = 0;
+    for (int i = 10; i <= 100000; i*=10) {
+        *(bestCase + ptrmover) = sortList(i);
+        ptrmover++;
+    }
+    int count = 10;
+    long time;
+    clock_t start, end;
+    long segBest[5];
+    int elemtBest[5];
+    for (int j = 0; j < 5; ++j) {
+        start = clock();
+        selectionSort(bestCase[j]);
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segBest[j] = time;
+        elemtBest[j] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* bestfile;
+    bestfile = fopen("Selection_Peor.csv", "w");
+    if (bestfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if(i+1 == 5){
+                fprintf(bestfile, "%d",elemtBest[i]);
+            } else {
+                fprintf(bestfile, "%d,",elemtBest[i]);
+            }
+        }
+        fprintf(bestfile,"\n");
+        for (int j = 0; j < 5; ++j) {
+            if(j+1 == 5){
+                fprintf(bestfile, "%ld",segBest[j]);
+            } else {
+                fprintf(bestfile, "%ld,",segBest[j]);
+            }
+        }
+    }
+    fclose(bestfile);
+    free(bestCase);
+
+    //Caso promedio
+    struct Node** promCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int promIndex = 0;
+    for (int m = 10; m <= 100000; m*=10) {
+        *(promCase + promIndex) = rndList(m);
+        promIndex++;
+    }
+    long segProm[5];
+    int elemtProm[5];
+    for (int k = 0; k < 5; ++k) {
+        start = clock();
+        selectionSort(promCase[k]);
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segProm[k] = time;
+        elemtProm[k] = count;
+        count*=10;
+    }
+    count = 10;
+    FILE* promfile;
+    promfile = fopen("Selection_Promedio.csv", "w");
+    if (promfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5){
+                fprintf(promfile, "%d", elemtProm[i]);
+            } else {
+                fprintf(promfile, "%d,", elemtProm[i]);
+            }
+        }
+        fprintf(promfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5){
+                fprintf(promfile, "%ld", segProm[j]);
+            } else {
+                fprintf(promfile, "%ld,", segProm[j]);
+            }
+        }
+    }
+    fclose(promfile);
+    free(promCase);
+
+    //Peor Caso
+    struct Node** worstCase = (struct Node**)malloc(5*sizeof(struct Node));
+    int worstIndex = 0;
+    for (int l = 10; l <= 100000; l*=10) {
+        *(worstCase + worstIndex) = invertList(l);
+        worstIndex++;
+    }
+    long segWorst[5];
+    int elemtWorst[5];
+    for (int n = 0; n < 5; ++n) {
+        start = clock();
+        selectionSort(worstCase[n]);
+        end = clock();
+        time = 1000L*(end-start)/CLOCKS_PER_SEC;
+        segWorst[n] = time;
+        elemtWorst[n] = count;
+        count*=10;
+    }
+    FILE* worstfile;
+    worstfile = fopen("Selection_Mejor.csv", "w");
+    if (worstfile != NULL){
+        for (int i = 0; i < 5; ++i) {
+            if (i+1 == 5) {
+                fprintf(worstfile, "%d", elemtWorst[i]);
+            } else {
+                fprintf(worstfile, "%d,", elemtWorst[i]);
+            }
+        }
+        fprintf(worstfile, "\n");
+        for (int j = 0; j < 5; ++j) {
+            if (j+1 == 5) {
+                fprintf(worstfile, "%ld", segWorst[j]);
+            } else {
+                fprintf(worstfile, "%ld,", segWorst[j]);
+            }
+        }
+    }
+    fclose(worstfile);
+    free(worstCase);
+}
+
+int main() {
+
+    //testBubble();
+    //testInsertion();
+    //testMerge();
+    //testQuick();
+    //testSelection();
 }
