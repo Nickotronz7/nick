@@ -176,6 +176,24 @@ void quickSort(struct Node* head){
 }
 /***/
 
+
+/*** Selection Sort */
+void selectionSort(struct Node* head){
+    struct Node* h = head, *i, *j;
+    for (i = h; i != NULL && i->next != NULL; i = i->next){
+        struct Node* min;
+        min = i;
+        for(j = i->next; j != NULL; j = j->next){
+            if(j->data < min->data)
+                min = j;
+        }
+        if (min != i){
+            swap(min, i);
+        }
+    }
+    //head = &h;
+}
+/***/
 int main(){
     struct Node* Lista1 = NULL;
 
@@ -188,7 +206,7 @@ int main(){
     push(&Lista1, 52);
     push(&Lista1, 577);
 
-    quickSort(Lista1);
+    selectionSort(Lista1);
 
     printList(Lista1);
 }
